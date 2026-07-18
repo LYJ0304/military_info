@@ -11,6 +11,9 @@
 !.yarn/versions
 
 # testing
+*.csv
+!tests/fixtures/*.csv
+
 /coverage
 
 # next.js
