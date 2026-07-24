@@ -179,7 +179,7 @@ LIMIT 20;
 
 ## 8. Git 파일 정책
 
-- 실제 운영 CSV: Git 제외
+- 실제 운영 CSV: 기본 Git 제외, 제9030부대 CSV는 Actions 갱신 예외
 - 테스트 fixture: `tests/fixtures/*.csv`만 포함
 - `.env.local`: Git 제외
 - migration SQL: Git 포함

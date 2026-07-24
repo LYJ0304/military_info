@@ -10,7 +10,10 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "test": "vitest run"
+    "test": "vitest run",
+    "data:update:9030": "node scripts/meal-sync.mjs download",
+    "notion:sync:9030": "node scripts/meal-sync.mjs sync",
+    "test:sync": "node --test tests/unit/scripts/meal-sync.test.mjs"
   },
   "dependencies": {
     "csv-parse": "^7.0.1",

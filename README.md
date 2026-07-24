@@ -260,10 +260,11 @@ Vercel 기본 도메인과 커스텀 도메인을 함께 사용하는 경우, OA
 
 ## CSV 파일 관리
 
-운영 중 내려받는 CSV는 Git에 커밋하지 않습니다.
+운영 CSV는 기본적으로 Git에서 제외하지만, GitHub Actions가 갱신하는 제9030부대 CSV는 추적합니다.
 
-- 루트 및 일반 디렉터리의 `*.csv`는 `.gitignore` 대상
+- 루트 및 일반 디렉터리의 `*.csv`는 기본적으로 `.gitignore` 대상
 - 테스트용 소형 fixture인 `tests/fixtures/*.csv`만 Git에 포함
+- `data/OA-9561_제9030부대_식단정보.csv`는 `git add -f`로 추적하는 운영 예외
 - Vercel 로컬 파일 시스템을 영구 저장소로 사용하지 않음
 - 임시 파일이 필요하면 `/tmp`만 사용하고 보존을 가정하지 않음
 - 현재 구현은 파일을 생성하지 않고 메모리에서 직접 처리
@@ -283,4 +284,18 @@ npm test
 npm run lint
 npm run typecheck
 npm run build
+```
+
+## 제9030부대 CSV 및 Notion 동기화
+
+`.github/workflows/sync-9030-meals.yml`은 매일 한국시간 06시, 12시, 18시에 제9030부대(`OA-9561`) CSV를 갱신하고 Notion 데이터베이스에 날짜별 식단을 반영합니다. Actions 화면에서 수동 실행할 수 있으며 `full_sync`를 선택하면 CSV 전체 날짜를 동기화합니다. 기본 실행 범위는 오늘 기준 과거 14일부터 미래 14일까지입니다.
+
+GitHub Actions secrets에는 `NOTION_API_KEY`, `NOTION_DATABASE_ID`를 등록해야 합니다. `NOTION_DATA_SOURCE_ID`가 등록돼 있으면 Database ID보다 우선합니다. Integration에는 대상 데이터베이스의 읽기, 콘텐츠 생성, 콘텐츠 수정 권한이 필요합니다.
+
+스크립트는 제목 속성을 자동으로 찾고 날짜, 부대, 조식·중식·석식·증특식과 각 열량, 총열량, 원본 ID, 마지막 동기화 속성을 준비합니다. 페이지 제목 `제9030부대 YYYY-MM-DD`를 기준으로 upsert하므로 반복 실행해도 중복 생성되지 않습니다.
+
+```bash
+npm run data:update:9030
+npm run notion:sync:9030
+npm run test:sync
 ```

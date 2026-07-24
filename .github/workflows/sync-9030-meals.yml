@@ -1,0 +1,58 @@
+name: Sync 9030 meals
+
+on:
+  workflow_dispatch:
+    inputs:
+      full_sync:
+        description: Sync every CSV date to Notion
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    - cron: "0 6,12,18 * * *"
+      timezone: "Asia/Seoul"
+
+concurrency:
+  group: sync-9030-meals
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Download and validate CSV
+        run: npm run data:update:9030
+      - name: Commit CSV changes
+        shell: bash
+        run: |
+          if git diff --quiet -- data/OA-9561_제9030부대_식단정보.csv; then
+            echo "CSV has not changed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f -- data/OA-9561_제9030부대_식단정보.csv
+          git commit -m "data: update 9030 meal dataset"
+          git push
+      - name: Synchronize Notion
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+          NOTION_DATA_SOURCE_ID: ${{ secrets.NOTION_DATA_SOURCE_ID }}
+          FULL_SYNC: ${{ inputs.full_sync || 'false' }}
+          SYNC_PAST_DAYS: "14"
+          SYNC_FUTURE_DAYS: "14"
+        run: npm run notion:sync:9030
