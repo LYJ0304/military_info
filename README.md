@@ -12,13 +12,11 @@
 | 영역 | 상태 | 설명 |
 | --- | --- | --- |
 | 제9030부대 CSV 수집 | 구현 완료 | 국방부 `OA-9561` CSV 다운로드 및 CP949/EUC-KR 처리 |
-| GitHub Actions 자동화 | 구현 완료 | 매일 한국시간 06시, 12시, 18시 실행 및 수동 실행 지원 |
+| GitHub Actions 자동화 | 구현 완료 | 매일 한국시간 오전 6시 실행 및 수동 실행 지원 |
 | CSV 버전 관리 | 구현 완료 | 내용이 변경된 경우에만 Actions bot이 커밋·푸시 |
 | Notion 동기화 | 구현 완료 | 날짜별 페이지 생성·수정, 중복 방지, 속성 자동 구성 |
 | Next.js 조회 API | 구현 완료 | PostgreSQL 기반 페이지네이션 및 날짜 필터 |
 | Vercel CSV import | 구현 완료 | `OA-9555` 대상 체크섬·lease lock·batch upsert |
-| 카카오 로그인 | 기본 골격 구현 | 실제 운영 키와 Redirect URI 설정 필요 |
-| 운영 배포 | 환경별 설정 필요 | GitHub Secrets, Notion 공유 권한, DB migration 및 Vercel 변수 필요 |
 
 ## 제9030부대 자동화
 
@@ -39,7 +37,7 @@ GitHub Actions (schedule / workflow_dispatch)
 
 ### 실행 일정과 범위
 
-- 예약 실행: 매일 한국시간 `06:00`, `12:00`, `18:00`
+- 예약 실행: 매일 한국시간 `06:00`
 - 수동 실행: GitHub의 **Actions → Sync 9030 meals → Run workflow**
 - 기본 동기화 범위: 오늘 기준 과거 14일~미래 14일
 - 전체 동기화: 수동 실행에서 `full_sync` 선택
@@ -161,7 +159,6 @@ CSV 원본은 Vercel Function 메모리에서 처리하며 PostgreSQL에는 정�
 - Drizzle ORM
 - PostgreSQL 또는 Neon
 - Vercel Functions 및 Vercel Cron
-- NextAuth 카카오 OAuth
 - Vitest
 
 ### 환경변수
@@ -177,10 +174,6 @@ cp .env.example .env.local
 | `DATABASE_URL` | Next.js/Drizzle | PostgreSQL 연결 문자열, Neon은 pooled URL 권장 |
 | `CSV_DOWNLOAD_URL` | Vercel import | 국방부 CSV 변환 endpoint |
 | `CRON_SECRET` | Vercel import | Cron Bearer 인증용 secret |
-| `NEXTAUTH_URL` | OAuth | 서비스 기준 URL |
-| `NEXTAUTH_SECRET` | OAuth | 세션 서명 secret |
-| `KAKAO_CLIENT_ID` | OAuth | 카카오 REST API 키 |
-| `KAKAO_CLIENT_SECRET` | OAuth | 카카오 Client Secret |
 | `NOTION_API_KEY` | Notion sync | Notion Integration secret |
 | `NOTION_DATABASE_ID` | Notion sync | 대상 Database ID |
 | `NOTION_DATA_SOURCE_ID` | Notion sync | 선택적 Data Source ID |
@@ -228,16 +221,6 @@ curl "http://localhost:3000/api/data?page=1&pageSize=30&date=2026-05-01"
 - 내부 오류와 stack trace를 API 응답에 노출하지 않음
 
 Import 상태는 `COMPLETED`, `PARTIALLY_COMPLETED`, `SKIPPED`, `FAILED`로 기록합니다.
-
-## Vercel 배포
-
-1. PostgreSQL 또는 Neon을 준비합니다.
-2. 운영 DB에 `npm run db:migrate`를 실행합니다.
-3. Vercel 환경변수에 DB, Cron, OAuth 값을 등록합니다.
-4. Production으로 배포합니다.
-5. `/api/health`, Cron Jobs, Function 로그를 확인합니다.
-
-`vercel.json`의 Cron은 매일 UTC `00:00`에 `/api/cron/import-csv`를 호출합니다. 이는 한국시간 오전 9시 구간이며 Vercel 플랜에 따라 실제 실행 시각이 지연될 수 있습니다.
 
 ## CSV 파일 정책
 
