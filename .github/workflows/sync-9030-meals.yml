@@ -54,7 +54,7 @@ jobs:
           git commit -m "data: update 9030 meal dataset"
           git push
       - name: Synchronize Notion
-        if: steps.csv.outputs.changed == 'true' || (github.event_name == 'workflow_dispatch' && inputs.full_sync == 'true')
+        # The date window advances daily even when the CSV is unchanged.
         env:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}

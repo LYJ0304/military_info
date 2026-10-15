@@ -40,6 +40,7 @@ GitHub Actions (schedule / workflow_dispatch)
 - 예약 실행: 매일 한국시간 `06:00`
 - 수동 실행: GitHub의 **Actions → Sync 9030 meals → Run workflow**
 - 기본 동기화 범위: 오늘 기준 과거 14일~미래 14일
+- CSV 변경 여부와 관계없이 매일 해당 날짜 범위를 Notion에 동기화합니다. 같은 식단은 수정하지 않습니다.
 - 전체 동기화: 수동 실행에서 `full_sync` 선택
 - 동시 실행: `sync-9030-meals` concurrency group으로 직렬화
 - 제한 시간: 20분
@@ -86,6 +87,7 @@ CSV 자동 커밋을 사용하려면 **Settings → Actions → General → Work
 - 국방부 응답이 비어 있거나 10MB를 초과하거나 HTML이면 CSV를 교체하지 않습니다.
 - CSV는 임시 파일에 먼저 기록한 뒤 원본 경로로 교체합니다.
 - Notion 동기화가 실패해도 앞 단계에서 커밋된 최신 CSV는 보존됩니다.
+- CSV가 이미 커밋되었거나 내용이 바뀌지 않아도 다음 실행에서 Notion 동기화를 다시 시도합니다.
 - 실패 내역은 GitHub Actions run의 단계별 로그에서 확인합니다.
 
 ## 로컬 실행
